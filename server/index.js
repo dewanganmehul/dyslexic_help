@@ -1,27 +1,26 @@
+require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
-const sessionRoutes = require("./routes/sessionRoutes");
-
-app.use("/api/sessions", sessionRoutes);
+const connectDB = require("./config/db");
 
 const app = express();
+
+connectDB();
 
 app.use(cors({
   origin: "http://localhost:5173"
 }));
+
 app.use(express.json());
 
-require("dotenv").config();
+const authRoutes = require("./routes/authRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+app.use("/api/auth", authRoutes);
+app.use("/api/sessions", sessionRoutes);
 
 app.get("/", (req, res) => {
-  res.send("DyslexiCore API running");
+  res.send("API running");
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
-});
+app.listen(5000, () => console.log("Server running on 5000"));

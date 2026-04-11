@@ -2,21 +2,30 @@ const express = require("express");
 const router = express.Router();
 const GameSession = require("../models/GameSession");
 
+// SAVE SESSION
 router.post("/submit", async (req, res) => {
+  console.log("Incoming Data:", req.body); // 👈 ADD THIS
+
   try {
     const session = new GameSession(req.body);
     await session.save();
-    res.status(201).json({ message: "Session saved" });
+
+    console.log("Saved Successfully"); // 👈 ADD THIS
+
+    res.json({ message: "Session saved successfully" });
   } catch (err) {
+    console.error(err); // 👈 IMPORTANT
     res.status(500).json({ error: err.message });
   }
 });
 
+// GET USER SESSIONS
 router.get("/:userId", async (req, res) => {
   try {
     const sessions = await GameSession.find({
       userId: req.params.userId
-    });
+    }).sort({ createdAt: -1 });
+
     res.json(sessions);
   } catch (err) {
     res.status(500).json({ error: err.message });

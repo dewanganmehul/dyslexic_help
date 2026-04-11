@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
 
 const gameSessionSchema = new mongoose.Schema({
-  userId: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+
   gameType: String,
+  level: String,
 
   accuracy: Number,
   totalQuestions: Number,
@@ -10,12 +16,8 @@ const gameSessionSchema = new mongoose.Schema({
   avgResponseTime: Number,
 
   errors: [String],
-  errorTypes: [String], // 👈 NEW FIELD
+  errorTypes: [String]
 
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("GameSession", gameSessionSchema);
