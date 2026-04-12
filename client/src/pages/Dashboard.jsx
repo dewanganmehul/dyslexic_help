@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { BASE_URL } from "../config/config";
 import {
   LineChart,
   Line,
@@ -120,7 +121,10 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [activeChart, setActiveChart] = useState("accuracy");
 
-  const userId = localStorage.getItem("userId") || "demoUser";
+  // Properly retrieve user _id from stored JSON
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
+  const userId = parsedUser ? parsedUser._id : null;
 
   useEffect(() => {
     fetchData();
@@ -133,9 +137,15 @@ function Dashboard() {
   };
 
   const fetchData = async () => {
+    if (!userId) {
+      setError("Please log in to view your mission data.");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await axios.get(`https://dyslexic-help.onrender.com/api/sessions/${userId}`);
+      const res = await axios.get(`${BASE_URL}/api/sessions/${userId}`);
       const formatted = res.data.map((item, index) => ({
         session: index + 1,
         accuracy: Math.round(item.accuracy),

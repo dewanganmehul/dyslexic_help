@@ -24,6 +24,7 @@ function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("userId", res.data.user._id);
 
       // Use navigate for a smooth SPA transition
       navigate("/map"); 
