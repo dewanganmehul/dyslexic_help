@@ -19,7 +19,7 @@ function Signup() {
     setError("");
 
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", formData);
+      await axios.post("https://dyslexic-help.onrender.com/api/auth/signup", formData);
       // Optional: You could auto-login the user here by getting a token back
       navigate("/login");
     } catch (err) {

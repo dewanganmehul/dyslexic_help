@@ -135,7 +135,7 @@ function Dashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/sessions/${userId}`);
+      const res = await axios.get(`https://dyslexic-help.onrender.com/api/sessions/${userId}`);
       const formatted = res.data.map((item, index) => ({
         session: index + 1,
         accuracy: Math.round(item.accuracy),

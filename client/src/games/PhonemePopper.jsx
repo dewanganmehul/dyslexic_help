@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { analyzeError } from "../utils/errorAnalysis";
 import { getNextLevel, getWordsByLevel } from "../utils/adaptiveEngine";
 import "./PhonemePopper.css";
+import { BASE_URL } from "../config/config";
 
 function PhonemePopper() {
   const [level, setLevel] = useState("easy");
@@ -113,7 +114,7 @@ function PhonemePopper() {
       const nextLevel = getNextLevel(level, accuracy, avgTime);
 
       try {
-        await axios.post("http://localhost:5000/api/sessions/submit", {
+        await axios.post(`${BASE_URL}/api/sessions/submit`, {
           userId: user._id,
           gameType: "phoneme_popper",
           level,
@@ -122,7 +123,8 @@ function PhonemePopper() {
           correctAnswers: newScore,
           avgResponseTime: avgTime,
           errors: updatedErrors,
-          errorTypes: updatedErrorTypes
+          errorTypes: updatedErrorTypes,
+          metrics: { ranTimeSeconds: newTotalTime / 1000 }
         });
 
         // 🧠 STORE RESULT FOR UI

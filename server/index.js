@@ -8,16 +8,20 @@ const app = express();
 connectDB();
 
 app.use(cors({
-  origin: "http://localhost:5173"
+  origin: ["http://localhost:5173",
+  "http://dyslexic-help.vercel.app"
+]
 }));
 
 app.use(express.json());
 
 const authRoutes = require("./routes/authRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
+const tutorRoutes = require("./routes/tutorRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions", sessionRoutes);
+app.use("/api/tutor", tutorRoutes);
 
 app.get("/", (req, res) => {
   res.send("API running");

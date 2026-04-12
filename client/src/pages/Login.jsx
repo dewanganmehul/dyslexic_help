@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../config/config";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${BASE_URL}/api/auth/login`,
         { email, password }
       );
 
@@ -27,6 +28,7 @@ function Login() {
       // Use navigate for a smooth SPA transition
       navigate("/map"); 
     } catch (err) {
+      console.log(err)
       setError("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);

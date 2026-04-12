@@ -16,7 +16,17 @@ const gameSessionSchema = new mongoose.Schema({
   avgResponseTime: Number,
 
   errors: [String],
-  errorTypes: [String]
+  errorTypes: [String],
+
+  metrics: {
+    latencyMs: Number,
+    saccadicMovementScore: Number, 
+    phonologicalLoopCapacity: Number, 
+    letterReversals: Number, 
+    ranTimeSeconds: Number, 
+    phonemicSubstitutions: [String] 
+  },
+  riskLevel: { type: String, enum: ['Low', 'Moderate', 'High', 'Pending'], default: 'Pending' }
 
 }, { timestamps: true });
 
