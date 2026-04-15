@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
+import "./styles/StarTracker.css";
 
 function StarTracker() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,9 +12,7 @@ function StarTracker() {
   const [score, setScore] = useState(0);
 
   const spawnTimeRef = useRef(0);
-  const gameAreaRef = useRef(null);
   const navigate = useNavigate();
-
   const MISSION_LENGTH = 10;
 
   const startGame = () => {
@@ -30,26 +29,26 @@ function StarTracker() {
       return;
     }
 
-    const size = 50;
-    const x = Math.floor(Math.random() * (window.innerWidth * 0.8 - size));
-    const y = Math.floor(Math.random() * (window.innerHeight * 0.6 - size));
+    // Calculating bounds to keep targets within the "Radar" area
+    const size = 60;
+    const x = Math.floor(Math.random() * (window.innerWidth - size * 2)) + size;
+    const y = Math.floor(Math.random() * (window.innerHeight - size * 4)) + size * 2;
 
     setTarget({ x, y, size });
     spawnTimeRef.current = performance.now();
   };
 
   const handleTargetClick = (e) => {
+    e.stopPropagation();
     if (!isPlaying) return;
 
-    const clickTime = performance.now();
-    const latency = clickTime - spawnTimeRef.current;
-
+    const latency = performance.now() - spawnTimeRef.current;
     setSessionData((prev) => [...prev, { latency }]);
     setScore((prev) => prev + 100);
     setTarget(null);
 
-    // Minor delay before next spawn
-    setTimeout(spawnTarget, Math.random() * 800 + 400);
+    // Random interval for unpredictable saccadic jumps
+    setTimeout(spawnTarget, Math.random() * 600 + 300);
   };
 
   const endGame = async () => {
@@ -57,66 +56,83 @@ function StarTracker() {
     setGameOver(true);
 
     const avgLatency = sessionData.reduce((acc, val) => acc + val.latency, 0) / sessionData.length;
-    const accuracy = 100; // Perfect accuracy if they clicked all
 
     try {
       const userId = localStorage.getItem("userId") || "demoUser";
       await axios.post(`${BASE_URL}/api/sessions/submit`, {
         userId,
         gameType: "StarTracker",
-        level: "Lab-1",
-        accuracy,
+        level: "Saccadic-Lab-1",
+        accuracy: 100,
         totalQuestions: MISSION_LENGTH,
         correctAnswers: MISSION_LENGTH,
         avgResponseTime: avgLatency,
-        metrics: {
-          latencyMs: avgLatency,
-          saccadicMovementScore: avgLatency < 600 ? 10 : 5 // simplify saccadic mapping for mock
-        }
+        metrics: { saccadicMovementScore: avgLatency < 500 ? 10 : 7 }
       });
     } catch (err) {
-      console.error("Failed to save session", err);
+      console.error(err);
     }
   };
 
   return (
-    <div className="game-container" ref={gameAreaRef}>
-      <h1 style={{ marginBottom: "1rem" }}>✨ Star Tracker Diagnostics</h1>
-      <p style={{ color: "var(--text-muted)", marginBottom: "2rem", maxWidth: "600px" }}>Click the appearing stars as fast as you can. We are tracking your visual response speed.</p>
-      
+    <div className="st-root" onClick={() => isPlaying && console.log("Miss!")}>
+      <div className="st-radar-grid" />
+
+      <header className="st-hud">
+        <h1 style={{ fontFamily: 'Syne', fontSize: '1.5rem', margin: 0 }}>STAR TRACKER</h1>
+        <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px' }}>
+          VISUAL SACCADIC CALIBRATION
+        </p>
+      </header>
+
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} className="neon-btn">Commence Calibration 🚀</button>
+        <div style={{ zIndex: 20, textAlign: 'center', marginTop: '100px' }}>
+          <p style={{ maxWidth: '400px', marginBottom: '30px', color: 'rgba(255,255,255,0.6)' }}>
+            Establish a neural link with the optical sensor. Neutralize the star signals as they appear on the radar.
+          </p>
+          <button onClick={startGame} className="neon-btn">INITIATE TRACKING</button>
+        </div>
       )}
 
       {gameOver && (
-        <div className="glass-panel pulse-glow">
-          <h2 style={{ marginBottom: "1rem" }}>Mission Complete!</h2>
-          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Score: {score}</p>
-          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
+        <div className="glass-panel" style={{ zIndex: 20, padding: '40px', textAlign: 'center', marginTop: '50px' }}>
+          <h2 style={{ fontFamily: 'Syne' }}>CALIBRATION COMPLETE</h2>
+          <div style={{ margin: '30px 0' }}>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>NEURAL RESPONSE SCORE</p>
+            <h1 style={{ fontSize: '4rem', color: '#7c3aed', margin: 0 }}>{score}</h1>
+          </div>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn" style={{ width: '100%' }}>
+            SYNC TO MISSION CONTROL
+          </button>
         </div>
       )}
 
       {isPlaying && target && (
         <div
+          className="st-target"
           onClick={handleTargetClick}
           style={{
-            position: "absolute",
             left: target.x,
-            top: target.y + 150, // offset header
+            top: target.y,
             width: target.size,
             height: target.size,
-            backgroundColor: "#ffdd00",
-            borderRadius: "50%",
-            boxShadow: "0 0 20px #ffdd00",
-            cursor: "crosshair",
-            transition: "transform 0.1s"
           }}
-        />
+        >
+          <div className="st-star-core" />
+          <div className="st-ring" style={{ animationDelay: '0s' }} />
+          <div className="st-ring" style={{ animationDelay: '0.5s' }} />
+        </div>
+      )}
+
+      {isPlaying && (
+        <div className="st-stats-bar">
+          <div>TRACKED: {sessionData.length} / {MISSION_LENGTH}</div>
+          <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)' }} />
+          <div>SYSTEM: ACTIVE</div>
+        </div>
       )}
     </div>
   );
 }
-
-
 
 export default StarTracker;

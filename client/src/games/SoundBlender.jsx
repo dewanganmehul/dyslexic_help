@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
+import "./styles/SoundBlender.css";
 
 const words = [
   { target: "cat", phonemes: ["c", "a", "t"] },
@@ -14,6 +15,7 @@ function SoundBlender() {
   const [availableTiles, setAvailableTiles] = useState(["c", "a", "t", "d", "o", "g"]);
   const [gameOver, setGameOver] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [isBlending, setIsBlending] = useState(false);
   
   const navigate = useNavigate();
 
@@ -30,13 +32,10 @@ function SoundBlender() {
   const handleDrop = (e) => {
     e.preventDefault();
     const tile = e.dataTransfer.getData("text/plain");
-    
-    // Play sound immediately as it hits blender
     playSynthesizedPhoneme(tile);
-    
     setBlenderContents(prev => [...prev, tile]);
     setAvailableTiles(prev => {
-      const idx = prev.findIndex(t => t === tile);
+      const idx = prev.indexOf(tile);
       if (idx !== -1) {
         const newArr = [...prev];
         newArr.splice(idx, 1);
@@ -46,35 +45,36 @@ function SoundBlender() {
     });
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
   const handleBlend = () => {
-    const blendedWord = blenderContents.join("");
-    // Play full word
-    playSynthesizedPhoneme(blendedWord, 1.0);
+    if (blenderContents.length === 0) return;
     
-    const target = words[level].target;
-    if (blendedWord === target) {
-      setFeedback("✅ Perfect Blend!");
-      setTimeout(() => {
-        if (level + 1 >= words.length) {
-          endGame();
-        } else {
-          setLevel(level + 1);
+    setIsBlending(true);
+    const blendedWord = blenderContents.join("");
+    playSynthesizedPhoneme(blendedWord, 0.6); // Slow merge sound
+
+    setTimeout(() => {
+      setIsBlending(false);
+      const target = words[level].target;
+      if (blendedWord === target) {
+        setFeedback("STABILIZED ✅");
+        setTimeout(() => {
+          if (level + 1 >= words.length) {
+            endGame();
+          } else {
+            setLevel(level + 1);
+            setBlenderContents([]);
+            setFeedback("");
+          }
+        }, 1200);
+      } else {
+        setFeedback("CRITICAL FAILURE ❌");
+        setTimeout(() => {
+          setAvailableTiles(prev => [...prev, ...blenderContents]);
           setBlenderContents([]);
           setFeedback("");
-        }
-      }, 1500);
-    } else {
-      setFeedback("❌ Hmm, that doesn't sound right. Dump and try again!");
-      setTimeout(() => {
-        setAvailableTiles(prev => [...prev, ...blenderContents]);
-        setBlenderContents([]);
-        setFeedback("");
-      }, 2000);
-    }
+        }, 1500);
+      }
+    }, 2000);
   };
 
   const endGame = async () => {
@@ -84,83 +84,84 @@ function SoundBlender() {
       await axios.post(`${BASE_URL}/api/sessions/submit`, {
         userId,
         gameType: "SoundBlender",
-        level: "Quest-5",
+        level: "Linguistic-Fusion-5",
         accuracy: 100,
         totalQuestions: words.length,
         correctAnswers: words.length,
-        avgResponseTime: 0
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   return (
-    <div style={{ backgroundColor: "#3a0e28", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🌪️ The Sound Blender</h1>
-      <p>Drag the letters matching the target word into the blender, then hit BLEND!</p>
+    <div className="sb-root">
+      <header style={{ textAlign: "center", marginBottom: "40px" }}>
+        <h1 style={{ fontFamily: "Syne", fontSize: "2.5rem", margin: 0 }}>PARTICLE BLENDER</h1>
+        <p style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "2px", fontSize: "0.8rem" }}>
+          PHONETIC ATOM FUSION SYSTEM
+        </p>
+      </header>
 
       {gameOver ? (
-        <div>
-          <h2>Master Blender!</h2>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="sb-hud">
+          <h2>FUSION COMPLETE</h2>
+          <button onClick={() => navigate("/dashboard")} className="sb-btn-blend" style={{ width: "100%" }}>
+            RETURN TO COMMAND
+          </button>
         </div>
-      ) : words[level] && (
-        <div style={{ marginTop: "30px" }}>
-          <h2>Target Word: <span style={{ color: "#ffdd00" }}>{words[level].target.toUpperCase()}</span></h2>
+      ) : (
+        <div className="sb-hud">
+          <p style={{ fontSize: "0.7rem", color: "#7c3aed", fontWeight: "bold", letterSpacing: "1px" }}>
+            TARGET MOLECULE: {words[level].target.toUpperCase()}
+          </p>
 
-          {/* Letter Bank */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "30px 0" }}>
+          <div className="sb-tile-bank">
             {availableTiles.map((tile, i) => (
               <div 
-                key={i}
-                draggable
-                onDragStart={(e) => handleDragStart(e, tile)}
-                style={{
-                  width: "50px", height: "50px", backgroundColor: "rgba(255,255,255,0.2)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "30px", fontWeight: "bold", borderRadius: "8px", cursor: "grab"
-                }}
+                key={i} 
+                draggable 
+                onDragStart={(e) => handleDragStart(e, tile)} 
+                className="sb-tile"
               >
                 {tile.toUpperCase()}
               </div>
             ))}
           </div>
 
-          {/* Blender */}
           <div 
+            className={`sb-vortex-container ${isBlending ? 'sb-vortex-active' : ''}`}
             onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            style={{
-              width: "250px", height: "300px", border: "4px solid #fff", borderRadius: "10px 10px 50px 50px",
-              margin: "0 auto", position: "relative", backgroundColor: "rgba(255,255,255,0.05)",
-              display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px", gap: "5px"
-            }}
+            onDragOver={(e) => e.preventDefault()}
           >
-            {/* Contents */}
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "5px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px" }}>
               {blenderContents.map((tile, idx) => (
-                <div key={idx} style={{ fontSize: "40px", fontWeight: "bold", color: "#4cc9f0" }}>
+                <div key={idx} className="sb-particle">
                   {tile.toUpperCase()}
                 </div>
               ))}
             </div>
+            {blenderContents.length === 0 && !isBlending && (
+              <div style={{ color: "rgba(255,255,255,0.1)", fontSize: "0.8rem" }}>
+                DROP PHONEMES HERE
+              </div>
+            )}
           </div>
 
-          <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "15px" }}>
-            <button onClick={handleBlend} style={{...btnStyle, backgroundColor: "#1D9E75"}}>BLEND 🔥</button>
+          <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+            <button onClick={handleBlend} className="sb-btn-blend">
+              {isBlending ? "FUSING..." : "INITIATE BLEND"}
+            </button>
             <button 
               onClick={() => {
                 setAvailableTiles(prev => [...prev, ...blenderContents]);
                 setBlenderContents([]);
-              }} 
-              style={{...btnStyle, backgroundColor: "#E24B4A"}}
+              }}
+              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: "14px", padding: "0 20px", cursor: "pointer" }}
             >
-              DUMP 🗑️
+              DUMP
             </button>
           </div>
 
-          <div style={{ marginTop: "20px", fontSize: "20px", color: feedback.includes("❌") ? "#ff4d4d" : "#1D9E75" }}>
+          <div style={{ marginTop: "25px", height: "20px", fontWeight: "bold", color: feedback.includes("❌") ? "#ef4444" : "#10b981" }}>
             {feedback}
           </div>
         </div>
@@ -168,15 +169,5 @@ function SoundBlender() {
     </div>
   );
 }
-
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
 
 export default SoundBlender;
