@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -14,48 +12,121 @@ import {
 } from "recharts";
 import { generateInsights } from "../utils/insights";
 
+/* ─── styles ─────────────────────────────────────────────────── */
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@500;600&display=swap');
+
+  .dashboard-root {
+    min-height: 100vh;
+    background: #0a0614;
+    font-family: 'DM Sans', sans-serif;
+    color: #e2e8f0;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Shared Background Elements */
+  .dc-grid {
+    position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(124,58,237,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+  }
+
+  .dc-orb { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .12; pointer-events: none; z-index: 0; }
+  .dc-orb-1 { width: 500px; height: 500px; background: #7c3aed; top: -100px; right: -100px; }
+  .dc-orb-2 { width: 400px; height: 400px; background: #0ea5e9; bottom: -100px; left: -100px; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.6s ease forwards; }
+  .fade-up-1 { animation-delay: 0.1s; opacity: 0; }
+  .fade-up-2 { animation-delay: 0.2s; opacity: 0; }
+  .fade-up-3 { animation-delay: 0.3s; opacity: 0; }
+  .fade-up-4 { animation-delay: 0.4s; opacity: 0; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  /* Chart Tabs */
+  .chart-tab {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-tab.active {
+    background: rgba(124,58,237,0.2);
+    border-color: rgba(124,58,237,0.5);
+    color: #fff;
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: var(--o);
+    animation: twinkle var(--d) infinite ease-in-out var(--delay);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--o); transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+`;
+
 const RISK_CONFIG = {
   Low: {
-    color: "#1D9E75",
-    bg: "rgba(29,158,117,0.12)",
-    border: "rgba(29,158,117,0.35)",
-    label: "Low Risk",
+    color: "#10b981",
+    bg: "rgba(16,185,129,0.08)",
+    border: "rgba(16,185,129,0.2)",
+    label: "Optimal Level",
     icon: "✦",
-    desc: "Excellent performance",
+    desc: "Pilot is performing at peak efficiency.",
   },
   Moderate: {
-    color: "#EF9F27",
-    bg: "rgba(239,159,39,0.12)",
-    border: "rgba(239,159,39,0.35)",
-    label: "Moderate Risk",
+    color: "#f59e0b",
+    bg: "rgba(245,158,11,0.08)",
+    border: "rgba(245,158,11,0.2)",
+    label: "Observation Required",
     icon: "◈",
-    desc: "Some areas to improve",
+    desc: "Minor pattern variations detected.",
   },
   High: {
-    color: "#E24B4A",
-    bg: "rgba(226,75,74,0.12)",
-    border: "rgba(226,75,74,0.35)",
-    label: "High Risk",
+    color: "#ef4444",
+    bg: "rgba(239,68,68,0.08)",
+    border: "rgba(239,68,68,0.2)",
+    label: "Critical Attention",
     icon: "▲",
-    desc: "Needs focused attention",
+    desc: "Significant literacy friction detected.",
   },
 };
+
+/* ─── components ─────────────────────────────────────────────── */
 
 const CustomTooltip = ({ active, payload, label, unit }) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: "rgba(10,10,20,0.92)",
-        border: "0.5px solid rgba(255,255,255,0.12)",
-        borderRadius: 10,
-        padding: "10px 14px",
+        background: "rgba(10,6,20,0.95)",
+        border: "1px solid rgba(124,58,237,0.3)",
+        borderRadius: 12,
+        padding: "12px",
         fontFamily: "'DM Sans', sans-serif",
-        backdropFilter: "blur(8px)",
+        backdropFilter: "blur(10px)",
+        boxShadow: "0 10px 20px rgba(0,0,0,0.4)"
       }}>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, margin: "0 0 4px" }}>
-          Session {label}
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, textTransform: "uppercase", margin: "0 0 4px" }}>
+          Mission Session {label}
         </p>
-        <p style={{ color: "#fff", fontSize: 15, fontWeight: 500, margin: 0 }}>
+        <p style={{ color: "#fff", fontSize: 16, fontWeight: 700, margin: 0 }}>
           {payload[0].value}{unit}
         </p>
       </div>
@@ -64,50 +135,45 @@ const CustomTooltip = ({ active, payload, label, unit }) => {
   return null;
 };
 
-function StatCard({ label, value, unit, sub, color = "#7F77DD" }) {
+function StatCard({ label, value, unit, sub, color = "#7c3aed" }) {
   return (
-    <div style={{
+    <div className="dc-stat-card" style={{
       background: "rgba(255,255,255,0.03)",
-      border: "0.5px solid rgba(255,255,255,0.08)",
-      borderRadius: 16,
-      padding: "20px 22px",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderRadius: 20,
+      padding: "24px",
       position: "relative",
       overflow: "hidden",
-      transition: "border-color 0.2s",
-    }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)"}
-      onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
-    >
+    }}>
       <div style={{
-        position: "absolute", top: -20, right: -20, width: 80, height: 80,
-        borderRadius: "50%", background: color, opacity: 0.08, filter: "blur(20px)",
+        position: "absolute", top: -10, right: -10, width: 60, height: 60,
+        borderRadius: "50%", background: color, opacity: 0.1, filter: "blur(20px)",
       }} />
-      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 10px", fontFamily: "'DM Sans', sans-serif" }}>
+      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", margin: "0 0 12px" }}>
         {label}
       </p>
-      <p style={{ color: "#fff", fontSize: 28, fontWeight: 600, margin: "0 0 4px", fontFamily: "'DM Sans', sans-serif", lineHeight: 1 }}>
-        {value}<span style={{ fontSize: 14, fontWeight: 400, color: "rgba(255,255,255,0.4)", marginLeft: 3 }}>{unit}</span>
+      <p style={{ color: "#fff", fontSize: 32, fontWeight: 700, margin: "0 0 4px", fontFamily: "'Syne', sans-serif" }}>
+        {value}<span style={{ fontSize: 14, fontWeight: 400, color: "rgba(255,255,255,0.3)", marginLeft: 4 }}>{unit}</span>
       </p>
-      {sub && <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{sub}</p>}
+      {sub && <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: 0 }}>{sub}</p>}
     </div>
   );
 }
 
 function InsightPill({ text, type = "insight" }) {
   const colors = {
-    insight: { bg: "rgba(127,119,221,0.12)", border: "rgba(127,119,221,0.3)", dot: "#7F77DD" },
-    rec: { bg: "rgba(29,158,117,0.1)", border: "rgba(29,158,117,0.28)", dot: "#1D9E75" },
+    insight: { bg: "rgba(124,58,237,0.08)", border: "rgba(124,58,237,0.2)", dot: "#7c3aed" },
+    rec: { bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)", dot: "#10b981" },
   };
   const c = colors[type];
   return (
     <div style={{
-      display: "flex", alignItems: "flex-start", gap: 10,
-      background: c.bg, border: `0.5px solid ${c.border}`,
-      borderRadius: 10, padding: "12px 14px",
-      fontFamily: "'DM Sans', sans-serif",
+      display: "flex", alignItems: "flex-start", gap: 12,
+      background: c.bg, border: `1px solid ${c.border}`,
+      borderRadius: 14, padding: "14px",
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: "50%", background: c.dot, marginTop: 5, flexShrink: 0 }} />
-      <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 13.5, margin: 0, lineHeight: 1.6 }}>{text}</p>
+      <div style={{ width: 6, height: 6, borderRadius: "50%", background: c.dot, marginTop: 7, flexShrink: 0, boxShadow: `0 0 8px ${c.dot}` }} />
+      <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 13, margin: 0, lineHeight: 1.5 }}>{text}</p>
     </div>
   );
 }
@@ -121,7 +187,6 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [activeChart, setActiveChart] = useState("accuracy");
 
-  // Properly retrieve user _id from stored JSON
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
   const userId = parsedUser ? parsedUser._id : null;
@@ -138,7 +203,7 @@ function Dashboard() {
 
   const fetchData = async () => {
     if (!userId) {
-      setError("Please log in to view your mission data.");
+      setError("Pilot authentication required. Please log in.");
       setLoading(false);
       return;
     }
@@ -160,7 +225,7 @@ function Dashboard() {
         setRecommendations(result.recommendations);
       }
     } catch (err) {
-      setError("Unable to load mission data. Check your connection.");
+      setError("Telemetry sync failed. Check connection.");
     } finally {
       setLoading(false);
     }
@@ -171,80 +236,70 @@ function Dashboard() {
   const riskCfg = RISK_CONFIG[risk] || RISK_CONFIG["Low"];
 
   const chartData = activeChart === "accuracy"
-    ? { key: "accuracy", color: "#7F77DD", unit: "%", label: "Accuracy" }
-    : { key: "responseTime", color: "#1D9E75", unit: "ms", label: "Response Time" };
+    ? { key: "accuracy", color: "#7c3aed", unit: "%", label: "Accuracy" }
+    : { key: "responseTime", color: "#10b981", unit: "ms", label: "Response Time" };
 
   return (
     <>
+      <style>{CSS}</style>
       <div className="dashboard-root">
-        {/* Starfield */}
-        <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-          {Array.from({ length: 60 }).map((_, i) => (
+        <div className="dc-grid" />
+        <div className="dc-orb dc-orb-1" />
+        <div className="dc-orb dc-orb-2" />
+
+        {/* Stars */}
+        <div style={{ position: "fixed", inset: 0, pointerEvents: "none" }}>
+          {Array.from({ length: 40 }).map((_, i) => (
             <div key={i} className="star" style={{
               width: Math.random() * 2 + 1,
               height: Math.random() * 2 + 1,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              "--d": `${2 + Math.random() * 4}s`,
-              "--delay": `${Math.random() * 4}s`,
-              "--o": Math.random() * 0.5 + 0.2,
+              "--d": `${3 + Math.random() * 5}s`,
+              "--delay": `${Math.random() * 5}s`,
+              "--o": Math.random() * 0.4 + 0.1,
             }} />
           ))}
-          {/* Nebula glow */}
-          <div style={{ position: "absolute", top: "10%", left: "15%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(83,74,183,0.07) 0%, transparent 70%)" }} />
-          <div style={{ position: "absolute", bottom: "20%", right: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(15,110,86,0.07) 0%, transparent 70%)" }} />
         </div>
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1000, margin: "0 auto", padding: "40px 24px 80px" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", padding: "60px 24px" }}>
 
           {/* Header */}
-          <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              {/* Planet icon */}
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #7F77DD 0%, #534AB7 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: "0 0 24px rgba(127,119,221,0.4)" }}>
+          <div className="fade-up" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 50 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ 
+                width: 50, height: 50, borderRadius: "50%", 
+                background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)", 
+                display: "flex", alignItems: "center", justifyContent: "center", 
+                fontSize: 24, boxShadow: "0 0 30px rgba(124,58,237,0.4)" 
+              }}>
                 🪐
               </div>
               <div>
-                <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 20, fontWeight: 600, margin: 0, letterSpacing: "-0.02em" }}>
+                <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
                   Mission Control
                 </h1>
-                <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: 0 }}>
-                  Learning Analytics Dashboard
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Telemetric Analytics Dashboard
                 </p>
               </div>
             </div>
-            <button
-              onClick={fetchData}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "0.5px solid rgba(255,255,255,0.12)",
-                borderRadius: 10,
-                color: "rgba(255,255,255,0.6)",
-                fontSize: 13,
-                padding: "8px 16px",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                display: "flex", alignItems: "center", gap: 6,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.09)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
-            >
-              ↻ Refresh
+            <button onClick={fetchData} className="chart-tab" style={{ padding: "10px 20px" }}>
+              ↻ Refresh Telemetry
             </button>
           </div>
 
           {loading && (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
-              <div style={{ width: 40, height: 40, border: "2px solid rgba(255,255,255,0.08)", borderTopColor: "#7F77DD", borderRadius: "50%", margin: "0 auto 16px", animation: "spin 0.8s linear infinite" }} />
-              <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 14 }}>Loading mission data...</p>
+            <div style={{ textAlign: "center", padding: "100px 0" }}>
+              <div style={{ width: 40, height: 40, border: "3px solid rgba(124,58,237,0.1)", borderTopColor: "#7c3aed", borderRadius: "50%", margin: "0 auto 20px", animation: "spin 1s linear infinite" }} />
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Retrieving mission logs...</p>
             </div>
           )}
 
           {error && !loading && (
-            <div style={{ background: "rgba(226,75,74,0.1)", border: "0.5px solid rgba(226,75,74,0.3)", borderRadius: 12, padding: "18px 20px", marginBottom: 32, display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ color: "#E24B4A", fontSize: 16 }}>⚠</span>
-              <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, margin: 0 }}>{error}</p>
+            <div className="fade-up" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 16, padding: "20px", marginBottom: 30, display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 20 }}>⚠️</span>
+              <p style={{ color: "#f87171", fontSize: 14, margin: 0 }}>{error}</p>
             </div>
           )}
 
@@ -253,138 +308,117 @@ function Dashboard() {
               {/* Risk Banner */}
               <div className="fade-up fade-up-1" style={{
                 background: riskCfg.bg,
-                border: `0.5px solid ${riskCfg.border}`,
-                borderRadius: 16,
-                padding: "20px 24px",
-                marginBottom: 28,
+                border: `1px solid ${riskCfg.border}`,
+                borderRadius: 24,
+                padding: "24px 30px",
+                marginBottom: 30,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 12,
+                gap: 20,
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: "50%", background: riskCfg.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, opacity: 0.9 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                  <div style={{ 
+                    width: 50, height: 50, borderRadius: "50%", background: riskCfg.color, 
+                    display: "flex", alignItems: "center", justifyContent: "center", 
+                    fontSize: 20, color: "#000", fontWeight: "bold" 
+                  }}>
                     {riskCfg.icon}
                   </div>
                   <div>
-                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 16, fontWeight: 600, margin: 0, color: riskCfg.color }}>
+                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 600, margin: 0, color: riskCfg.color }}>
                       {riskCfg.label}
                     </p>
-                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", margin: 0 }}>{riskCfg.desc}</p>
+                    <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>{riskCfg.desc}</p>
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontStyle: "italic" }}>
-                  Based on last session
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Last Mission Status
                 </div>
               </div>
 
               {/* Stat Cards */}
-              <div className="fade-up fade-up-2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 28 }}>
-                <StatCard label="Avg Accuracy" value={avgAccuracy} unit="%" sub={`${data.length} sessions tracked`} color="#7F77DD" />
-                <StatCard label="Avg Response" value={avgResponse} unit="ms" sub="Reaction speed" color="#1D9E75" />
-                <StatCard label="Sessions" value={data.length} sub="Total completed" color="#EF9F27" />
-                <StatCard label="Streak" value="—" sub="Coming soon" color="#534AB7" />
+              <div className="fade-up fade-up-2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20, marginBottom: 30 }}>
+                <StatCard label="Average Accuracy" value={avgAccuracy} unit="%" sub="Performance stability" color="#7c3aed" />
+                <StatCard label="Processing Speed" value={avgResponse} unit="ms" sub="Response latency" color="#10b981" />
+                <StatCard label="Missions Logged" value={data.length} sub="Total flight time" color="#f59e0b" />
+                <StatCard label="Pilot Status" value="Active" sub="ID: Mission-X" color="#0ea5e9" />
               </div>
 
               {/* Chart Card */}
               <div className="fade-up fade-up-3" style={{
-                background: "rgba(255,255,255,0.025)",
-                border: "0.5px solid rgba(255,255,255,0.07)",
-                borderRadius: 20,
-                padding: "24px",
-                marginBottom: 28,
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 28,
+                padding: "30px",
+                marginBottom: 30,
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
                   <div>
-                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, fontWeight: 500, margin: 0 }}>
-                      Performance Over Time
+                    <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, margin: 0 }}>
+                      Performance Velocity
                     </p>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, margin: 0 }}>
-                      Track your progress across sessions
+                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: 0 }}>
+                      Telemetric data mapped over sequential missions
                     </p>
                   </div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 10 }}>
                     <button className={`chart-tab ${activeChart === "accuracy" ? "active" : ""}`} onClick={() => setActiveChart("accuracy")}>
                       Accuracy
                     </button>
                     <button className={`chart-tab ${activeChart === "responseTime" ? "active" : ""}`} onClick={() => setActiveChart("responseTime")}>
-                      Response Time
+                      Response
                     </button>
                   </div>
                 </div>
 
-                {data.length === 0 ? (
-                  <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 14 }}>No session data yet. Complete a game to see your chart.</p>
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <div style={{ height: 260, width: "100%" }}>
+                  <ResponsiveContainer>
+                    <AreaChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={chartData.color} stopOpacity={0.25} />
+                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={chartData.color} stopOpacity={0.3} />
                           <stop offset="100%" stopColor={chartData.color} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                      <XAxis dataKey="session" tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 11 }} axisLine={false} tickLine={false} label={{ value: "Session", position: "insideBottom", offset: -2, fill: "rgba(255,255,255,0.2)", fontSize: 11 }} />
-                      <YAxis tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip content={<CustomTooltip unit={chartData.unit} />} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                      <XAxis dataKey="session" tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<CustomTooltip unit={chartData.unit} />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
                       <Area
                         type="monotone"
                         dataKey={chartData.key}
                         stroke={chartData.color}
-                        strokeWidth={2}
-                        fill="url(#areaGrad)"
-                        dot={{ fill: chartData.color, r: 3, strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: chartData.color, stroke: "rgba(255,255,255,0.3)", strokeWidth: 2 }}
+                        strokeWidth={3}
+                        fill="url(#chartGrad)"
+                        dot={{ fill: chartData.color, r: 4, strokeWidth: 2, stroke: "#0a0614" }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                )}
+                </div>
               </div>
 
-              {/* Insights + Recommendations */}
-              <div className="fade-up fade-up-4" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-                {/* Insights */}
-                <div style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border: "0.5px solid rgba(255,255,255,0.07)",
-                  borderRadius: 20,
-                  padding: "22px",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(127,119,221,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🧠</div>
-                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 14, margin: 0 }}>Insights</p>
+              {/* Insights */}
+              <div className="fade-up fade-up-4" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
+                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, padding: "28px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(124,58,237,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🧠</div>
+                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 16, margin: 0 }}>Pattern Insights</p>
                   </div>
-                  {insights.length === 0 ? (
-                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 13 }}>No insights yet.</p>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {insights.map((item, i) => <InsightPill key={i} text={item} type="insight" />)}
-                    </div>
-                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {insights.length > 0 ? insights.map((item, i) => <InsightPill key={i} text={item} type="insight" />) : <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 13 }}>Pending mission analysis...</p>}
+                  </div>
                 </div>
 
-                {/* Recommendations */}
-                <div style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border: "0.5px solid rgba(255,255,255,0.07)",
-                  borderRadius: 20,
-                  padding: "22px",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(29,158,117,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎯</div>
-                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, fontSize: 14, margin: 0 }}>Recommendations</p>
+                <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, padding: "28px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(16,185,129,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎯</div>
+                    <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 16, margin: 0 }}>Tactical Recommendations</p>
                   </div>
-                  {recommendations.length === 0 ? (
-                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 13 }}>No recommendations yet.</p>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {recommendations.map((item, i) => <InsightPill key={i} text={item} type="rec" />)}
-                    </div>
-                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {recommendations.length > 0 ? recommendations.map((item, i) => <InsightPill key={i} text={item} type="rec" />) : <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 13 }}>Pending strategic data...</p>}
+                  </div>
                 </div>
               </div>
             </>

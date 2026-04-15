@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
+import "./styles/CVCExplorer.css";
 
 const words = [
   { target: "cat", parts: ["c", "a", "t"] },
@@ -16,15 +17,13 @@ function CVCExplorer() {
   const [availableTiles, setAvailableTiles] = useState([]);
   const [feedback, setFeedback] = useState("");
   const [gameOver, setGameOver] = useState(false);
-  
   const [metrics, setMetrics] = useState({ accuracy: 0, errors: 0 });
   const navigate = useNavigate();
 
-  // Synthetic Audio helper for Multisensory
   const playPhoneme = (letter) => {
     const speech = new SpeechSynthesisUtterance(letter);
-    speech.rate = 0.8;
-    speech.pitch = 1.2;
+    speech.rate = 0.7; // Slower for clarity
+    speech.pitch = 1.1;
     window.speechSynthesis.speak(speech);
   };
 
@@ -32,16 +31,14 @@ function CVCExplorer() {
     try {
       const res = await axios.post(`${BASE_URL}/api/tutor/hint`, { errorType, context });
       if (res.data.success) {
-        setFeedback("🤖 Tutor says: " + res.data.hint);
+        setFeedback("🤖 SYSTEM HINT: " + res.data.hint);
       }
     } catch (e) {
-      setFeedback("❌ Not quite right, keep trying!");
+      setFeedback("❌ ALIGNMENT FAILED. TRY AGAIN.");
     }
   };
 
-  useEffect(() => {
-    loadLevel(0);
-  }, []);
+  useEffect(() => { loadLevel(0); }, []);
 
   const loadLevel = (levelIdx) => {
     if (levelIdx >= words.length) {
@@ -49,17 +46,15 @@ function CVCExplorer() {
       return;
     }
     const targetWord = words[levelIdx];
-    // Shuffle parts for tiles
     const shuffled = [...targetWord.parts].sort(() => 0.5 - Math.random());
     setAvailableTiles(shuffled);
     setSlots([null, null, null]);
     setCurrentLevel(levelIdx);
-    setFeedback("");
+    setFeedback("AWAITING PHONEME ASSEMBLY...");
   };
 
   const handleTileClick = (tile, idx) => {
     playPhoneme(tile);
-    // Move to first empty slot
     const emptyIdx = slots.indexOf(null);
     if (emptyIdx !== -1) {
       const newSlots = [...slots];
@@ -71,7 +66,6 @@ function CVCExplorer() {
       setAvailableTiles(newAvailable);
 
       if (newSlots.indexOf(null) === -1) {
-        // Evaluate
         checkWord(newSlots.join(""));
       }
     }
@@ -79,8 +73,6 @@ function CVCExplorer() {
 
   const handleSlotClick = (tile, idx) => {
     if (!tile) return;
-    playPhoneme(tile);
-    // Return to available
     const newSlots = [...slots];
     newSlots[idx] = null;
     setSlots(newSlots);
@@ -90,7 +82,7 @@ function CVCExplorer() {
   const checkWord = (formedWord) => {
     const target = words[currentLevel].target;
     if (formedWord === target) {
-      setFeedback("✅ Fantastic blending!");
+      setFeedback("✅ PHONEME BLENDING OPTIMAL");
       playPhoneme(target);
       setTimeout(() => loadLevel(currentLevel + 1), 1500);
       setMetrics(p => ({ ...p, accuracy: p.accuracy + 1 }));
@@ -102,83 +94,83 @@ function CVCExplorer() {
 
   const endGame = async () => {
     setGameOver(true);
-    const accuracyPct = (metrics.accuracy / (metrics.accuracy + metrics.errors)) * 100;
+    const accuracyPct = (metrics.accuracy / (metrics.accuracy + metrics.errors)) * 100 || 100;
     try {
       const userId = localStorage.getItem("userId") || "demoUser";
       await axios.post(`${BASE_URL}/api/sessions/submit`, {
         userId,
         gameType: "CVCExplorer",
-        level: "Quest-1",
+        level: "Assembly-Lab-1",
         accuracy: accuracyPct,
         totalQuestions: words.length,
         correctAnswers: metrics.accuracy,
         avgResponseTime: 0,
-        metrics: {
-          phonemicSubstitutions: []
-        }
+        metrics: { phonemicSubstitutions: [] }
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   return (
-    <div className="game-container">
-      <h1 style={{ marginBottom: "1rem" }}>🧱 CVC Word Builder</h1>
-      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Drag the letters to spell the word you hear.</p>
+    <div className="cvc-root">
+      <div className="cvc-bg-hex" />
+
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', marginBottom: '30px' }}>
+        <h1 style={{ fontFamily: 'Syne', fontSize: '2.5rem', marginBottom: '8px' }}>CVC EXPLORER</h1>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', letterSpacing: '2px' }}>
+          QUANTUM LINGUISTIC ASSEMBLY
+        </p>
+      </div>
 
       {gameOver ? (
-        <div className="glass-panel pulse-glow">
-          <h2 style={{ marginBottom: "1rem" }}>Quest Complete!</h2>
-          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
+        <div className="cvc-hud">
+          <div style={{ fontSize: '50px', marginBottom: '20px' }}>🛰️</div>
+          <h2 style={{ fontFamily: 'Syne', marginBottom: '10px' }}>MISSION SUCCESSFUL</h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '30px' }}>
+            Phoneme patterns successfully integrated into core memory.
+          </p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn" style={{ width: '100%' }}>
+            RETURN TO COMMAND CENTER
+          </button>
         </div>
       ) : (
-        <div style={{ marginTop: "30px" }}>
-          <h2>Target Word: <span style={{ color: "#4cc9f0" }}>{words[currentLevel]?.target.toUpperCase()}</span></h2>
-          
-          <div style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "40px 0" }}>
+        <div className="cvc-hud">
+          <span style={{ fontSize: '0.7rem', color: '#7c3aed', letterSpacing: '3px', fontWeight: 700 }}>
+            TARGET SEQUENCE: {words[currentLevel]?.target.toUpperCase()}
+          </span>
+
+          <div className="cvc-slots-container">
             {slots.map((s, i) => (
               <div 
                 key={i} 
+                className={`cvc-slot ${s ? 'filled' : ''}`}
                 onClick={() => handleSlotClick(s, i)}
-                style={{ 
-                  width: "80px", height: "80px", border: "2px dashed #666", 
-                  borderRadius: "10px", display: "flex", alignItems: "center", 
-                  justifyContent: "center", fontSize: "40px", fontWeight: "bold",
-                  backgroundColor: s ? "#4cc9f0" : "transparent",
-                  color: s ? "#000" : "transparent",
-                  cursor: s ? "pointer" : "default"
-                }}>
+              >
                 {s ? s.toUpperCase() : ""}
               </div>
             ))}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
+          <div className="cvc-tiles-container">
             {availableTiles.map((t, i) => (
               <div 
                 key={i} 
+                className="cvc-tile"
                 onClick={() => handleTileClick(t, i)}
-                style={{
-                  width: "70px", height: "70px", backgroundColor: "#ffdd00", 
-                  borderRadius: "10px", display: "flex", alignItems: "center", 
-                  justifyContent: "center", fontSize: "30px", fontWeight: "bold",
-                  color: "#000", cursor: "pointer", boxShadow: "0 4px #b29a00"
-                }}>
+              >
                 {t.toUpperCase()}
               </div>
             ))}
           </div>
 
-          <div style={{ height: "60px", marginTop: "30px", fontSize: "20px", color: feedback.includes("❌") ? "#ff4d4d" : "#1D9E75" }}>
-            {feedback}
+          <div className={`cvc-tutor-box ${feedback.includes('❌') ? 'error' : ''}`}>
+            <p style={{ margin: 0, color: feedback.includes('❌') ? '#ef4444' : '#10b981', fontWeight: 600 }}>
+              {feedback}
+            </p>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-
 
 export default CVCExplorer;

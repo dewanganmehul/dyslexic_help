@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
+import "../games/styles/RapidRacer.css"
 
 const namingItems = [
   { text: "red", emoji: "🔴" },
@@ -15,20 +16,17 @@ const namingItems = [
 function RapidRacer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [feedback, setFeedback] = useState("");
+  const [finalTime, setFinalTime] = useState(0);
   
   const startTimeRef = useRef(0);
   const recognitionRef = useRef(null);
-  
   const navigate = useNavigate();
 
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
+      if (recognitionRef.current) recognitionRef.current.stop();
     };
   }, []);
 
@@ -44,28 +42,27 @@ function RapidRacer() {
   const startListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech Recognition is not supported in this browser. Please use Chrome/Edge.");
+      alert("Please use Chrome or Edge for Speech functionality.");
       return;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true; // Keep listening 
-    recognition.interimResults = true; // We want fast results
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-      // Find the latest result
       const current = event.resultIndex;
       const transcript = event.results[current][0].transcript.trim().toLowerCase();
 
-      // We need to use state setter callback because of stale closures in event listeners
       setCurrentIndex(prevIndex => {
         if (prevIndex >= namingItems.length) return prevIndex;
         
         const target = namingItems[prevIndex].text;
+        // Check if the detected word matches our target
         if (transcript.includes(target)) {
-          setFeedback(`✅ Detected: ${target}`);
-          setTimeout(() => setFeedback(""), 800);
+          setFeedback(`⚡ VELOCITY MATCH: ${target.toUpperCase()}`);
+          setTimeout(() => setFeedback(""), 600);
           
           const nextIndex = prevIndex + 1;
           if (nextIndex >= namingItems.length) {
@@ -78,66 +75,96 @@ function RapidRacer() {
       });
     };
 
-    recognition.onerror = (e) => console.log("Speech err:", e);
-    
     recognitionRef.current = recognition;
     recognition.start();
   };
 
   const endGame = async () => {
+    const totalTimeMs = performance.now() - startTimeRef.current;
+    setFinalTime(totalTimeMs);
     setIsPlaying(false);
     setGameOver(true);
-
-    const totalTimeMs = performance.now() - startTimeRef.current;
-    const ranTimeSeconds = (totalTimeMs / 1000).toFixed(2);
 
     try {
       const userId = localStorage.getItem("userId") || "demoUser";
       await axios.post(`${BASE_URL}/api/sessions/submit`, {
         userId,
         gameType: "RapidRacer",
-        level: "Lab-4",
-        accuracy: 100, // They have to get it to progress
+        level: "Velocity-Lab",
+        accuracy: 100,
         totalQuestions: namingItems.length,
         correctAnswers: namingItems.length,
         avgResponseTime: totalTimeMs / namingItems.length,
-        metrics: {
-          ranTimeSeconds: parseFloat(ranTimeSeconds)
-        }
+        metrics: { ranTimeSeconds: parseFloat((totalTimeMs / 1000).toFixed(2)) }
       });
     } catch (err) {
-      console.error(err);
+      console.error("Telemetry failed:", err);
     }
   };
 
   return (
-    <div className="game-container">
-      <h1 style={{ marginBottom: "1rem" }}>🏎️ Rapid Racer</h1>
-      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Say the names of the images as fast as you can! (Requires Microphone & Chrome)</p>
+    <div className="rr-root">
+      <div className="rr-track-lines" />
+      
+      {/* Title Header */}
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', marginBottom: '30px' }}>
+        <h1 style={{ fontFamily: 'Syne', fontSize: '2.5rem', marginBottom: '8px' }}>RAPID RACER</h1>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', letterSpacing: '1px' }}>
+          COGNITIVE VELOCITY TEST v4.0
+        </p>
+      </div>
 
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} className="neon-btn">Start Engine 🏁</button>
-      )}
-
-      {gameOver && (
-        <div className="glass-panel pulse-glow">
-          <h2 style={{ marginBottom: "1rem" }}>Finish Line Crossed!</h2>
-          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>RAN Time: {(ranTime / 1000).toFixed(2)} seconds</p>
-          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
+        <div className="rr-hud rr-finish-card">
+          <div style={{ fontSize: '50px', marginBottom: '20px' }}>🏎️</div>
+          <h2 style={{ marginBottom: '15px' }}>Ready to Launch?</h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '30px', lineHeight: '1.6' }}>
+            Identify the objects as they appear. <br/>
+            Speed is the primary metric for this mission.
+          </p>
+          <button onClick={startGame} className="neon-btn" style={{ padding: '16px 40px' }}>
+            IGNITION 🏁
+          </button>
         </div>
       )}
 
-      {isPlaying && !gameOver && currentIndex < namingItems.length && (
-        <div style={{ marginTop: "40px" }}>
-          <div style={{ fontSize: "120px", animation: "fadeUp 0.3s" }}>
-            {namingItems[currentIndex].emoji}
+      {isPlaying && (
+        <div className="rr-hud">
+          {/* Scanline visualizes the mic is "Listening" */}
+          <div className="rr-scanline" />
+          
+          <div className="rr-speed-bar">
+            <div 
+              className="rr-progress-fill" 
+              style={{ width: `${(currentIndex / namingItems.length) * 100}%` }} 
+            />
           </div>
           
-          <div style={{ marginTop: "50px", fontSize: "20px", color: "rgba(255,255,255,0.7)" }}>
-            Listening for you to say it...
+          <div className="rr-emoji-display">
+            {namingItems[currentIndex]?.emoji}
           </div>
           
-          {feedback && <div style={{ marginTop: "20px", fontSize: "24px", color: "#ffd43b", fontWeight: "bold" }}>{feedback}</div>}
+          <div style={{ fontSize: '0.75rem', color: '#7c3aed', letterSpacing: '2px', fontWeight: 700 }}>
+            SYSTEM LISTENING...
+          </div>
+          
+          <div className="rr-feedback">{feedback}</div>
+        </div>
+      )}
+
+      {gameOver && (
+        <div className="rr-hud rr-finish-card">
+          <div style={{ fontSize: '50px', marginBottom: '20px' }}>🏆</div>
+          <h2 style={{ fontFamily: 'Syne', marginBottom: '10px' }}>FINISH LINE CROSSED</h2>
+          <div style={{ margin: '30px 0' }}>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>TOTAL ELAPSED TIME</p>
+            <h1 style={{ fontSize: '4rem', color: '#7c3aed', margin: 0 }}>
+              {(finalTime / 1000).toFixed(2)}s
+            </h1>
+          </div>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn" style={{ width: '100%' }}>
+            TRANSMIT DATA TO MISSION CONTROL
+          </button>
         </div>
       )}
     </div>
