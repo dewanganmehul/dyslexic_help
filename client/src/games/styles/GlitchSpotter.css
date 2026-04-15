@@ -1,0 +1,87 @@
+/* GlitchSpotter.css */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Space+Grotesk:wght@500;700&display=swap');
+
+.gs-root {
+  min-height: 100vh;
+  background: #0a0614;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.gs-grid-bg {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0, 255, 149, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 255, 149, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.gs-hud {
+  position: relative;
+  z-index: 1;
+  background: rgba(10, 6, 20, 0.8);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 255, 149, 0.2);
+  border-radius: 30px;
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0, 255, 149, 0.1);
+}
+
+.gs-matrix {
+  display: grid;
+  gap: 12px;
+  margin: 30px 0;
+}
+
+.gs-cell {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #00ff95;
+}
+
+.gs-cell:hover {
+  background: rgba(0, 255, 149, 0.1);
+  border-color: #00ff95;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 149, 0.2);
+}
+
+.gs-cell.error-flash {
+  animation: gs-shake 0.3s ease;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+@keyframes gs-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.gs-stat-pill {
+  background: rgba(0, 255, 149, 0.1);
+  color: #00ff95;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
