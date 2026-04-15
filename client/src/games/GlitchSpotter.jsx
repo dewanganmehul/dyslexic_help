@@ -105,20 +105,20 @@ function GlitchSpotter() {
   };
 
   return (
-    <div style={{ backgroundColor: "#2b0a3d", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🔍 The Glitch Spotter</h1>
-      <p>Find the odd letter out as quickly as possible!</p>
-
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>👾 Glitch Spotter</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Find and click ONLY the '{targetLetter}'</p>
+      
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} style={btnStyle}>Scan Matrix 🚀</button>
+        <button onClick={startGame} className="neon-btn">Scan Matrix 🚀</button>
       )}
 
       {gameOver && (
-        <div>
-          <h2>Scan Complete!</h2>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Matrix Cleared!</h2>
           <p>Score: {score}</p>
-          <p>Glitch Reversals Made: {reversals}</p>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Mistakes (Reversals): {reversalsCount}</p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       )}
 
@@ -156,15 +156,6 @@ function GlitchSpotter() {
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
+
 
 export default GlitchSpotter;

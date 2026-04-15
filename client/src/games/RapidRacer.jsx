@@ -111,19 +111,19 @@ function RapidRacer() {
   };
 
   return (
-    <div style={{ backgroundColor: "#d9480f", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🏎️ Rapid Racer</h1>
-      <p>Name the objects as fast as you can! Ensure your microphone is allowed.</p>
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>🏎️ Rapid Racer</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Say the names of the images as fast as you can! (Requires Microphone & Chrome)</p>
 
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} style={btnStyle}>Start Engines 🚀</button>
+        <button onClick={startGame} className="neon-btn">Start Engine 🏁</button>
       )}
 
       {gameOver && (
-        <div>
-          <h2>Finish Line Crossed!</h2>
-          <p>Total RAN Time: {((performance.now() - startTimeRef.current)/1000).toFixed(2)} seconds</p>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Finish Line Crossed!</h2>
+          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>RAN Time: {(ranTime / 1000).toFixed(2)} seconds</p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       )}
 
@@ -143,17 +143,5 @@ function RapidRacer() {
     </div>
   );
 }
-
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#ffdd00",
-  color: "black",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
 
 export default RapidRacer;

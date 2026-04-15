@@ -112,19 +112,19 @@ function EchoWoods() {
   };
 
   return (
-    <div style={{ backgroundColor: "#1e3a29", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🌲 Echo Woods</h1>
-      <p>Listen to the sounds of the woods. Repeat the pattern exactly!</p>
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>🌲 Echo Woods</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Listen to the sounds of the woods. Repeat the pattern exactly!</p>
       
       {sequence.length === 0 && !gameOver && (
-        <button onClick={startNextRound} style={btnStyle}>Enter the Woods 🎧</button>
+        <button onClick={startNextRound} className="neon-btn">Enter the Woods 🎧</button>
       )}
 
       {gameOver && (
-        <div>
-          <h2>Night has fallen in the woods.</h2>
-          <p>Memory Capacity: {sequence.length - 1}</p>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Night has fallen in the woods.</h2>
+          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Memory Capacity: {sequence.length - 1}</p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       )}
 
@@ -161,15 +161,6 @@ function EchoWoods() {
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
+
 
 export default EchoWoods;

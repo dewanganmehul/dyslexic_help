@@ -90,14 +90,14 @@ function RhymeTrampoline() {
   };
 
   return (
-    <div style={{ backgroundColor: "#2b5c77", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center", position: "relative" }}>
-      <h1>🦘 Rhyme Trampoline</h1>
-      <p>Keep bouncing! Pick words that rhyme with the target.</p>
+    <div className="game-container" style={{ position: "relative" }}>
+      <h1 style={{ marginBottom: "1rem" }}>🦘 Rhyme Trampoline</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Keep bouncing! Pick words that rhyme with the target.</p>
 
       {gameOver ? (
-        <div>
-          <h2>Great Jumping!</h2>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Great Jumping!</h2>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       ) : currentRound && (
         <>
@@ -107,7 +107,7 @@ function RhymeTrampoline() {
 
           <div style={{ marginTop: "40px", display: "flex", justifyContent: "center", gap: "20px" }}>
             {currentRound.options.map((opt, i) => (
-              <button key={i} onClick={() => handleWordClick(opt)} style={optBtnStyle}>
+              <button key={i} onClick={() => handleWordClick(opt)} className="neon-btn" style={{ padding: "12px 30px", fontSize: "1.2rem", background: "linear-gradient(135deg,rgba(0,243,255,0.1),rgba(0,243,255,0.3))", color: "#fff", border: "1px solid var(--accent-cyan)" }}>
                 {opt}
               </button>
             ))}
@@ -131,22 +131,6 @@ function RhymeTrampoline() {
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
 
-const optBtnStyle = {
-  ...btnStyle,
-  backgroundColor: "rgba(255,255,255,0.1)",
-  border: "1px solid #fff",
-  fontSize: "20px"
-};
 
 export default RhymeTrampoline;

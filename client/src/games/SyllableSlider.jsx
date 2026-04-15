@@ -81,14 +81,14 @@ function SyllableSlider() {
   };
 
   return (
-    <div style={{ backgroundColor: "#0b3d2b", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🗡️ Syllable Chunking</h1>
-      <p>Click between letters to slice the word into syllables!</p>
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>🗡️ Syllable Chunking</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Click between letters to slice the word into syllables!</p>
 
       {gameOver ? (
-        <div>
-          <h2>Words Mastered!</h2>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Words Mastered!</h2>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       ) : currentData && (
         <div style={{ marginTop: "50px" }}>
@@ -112,9 +112,9 @@ function SyllableSlider() {
             ))}
           </div>
 
-          <button onClick={checkSlices} style={btnStyle}>Check Slices ✅</button>
+          <button onClick={checkSlices} className="neon-btn" style={{ marginTop: "2rem" }}>Check Slices ✅</button>
 
-          <div style={{ marginTop: "30px", fontSize: "20px", height: "40px", color: feedback.includes("❌") ? "#ff4d4d" : "#1D9E75" }}>
+          <div style={{ marginTop: "30px", fontSize: "20px", height: "40px", color: feedback.includes("❌") ? "var(--error)" : "var(--success)" }}>
             {feedback}
           </div>
         </div>
@@ -122,16 +122,5 @@ function SyllableSlider() {
     </div>
   );
 }
-
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "40px"
-};
 
 export default SyllableSlider;

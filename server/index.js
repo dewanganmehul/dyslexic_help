@@ -9,7 +9,7 @@ connectDB();
 
 app.use(cors({
   origin: ["http://localhost:5173",
-  "http://dyslexic-help.vercel.app"
+  "https://dyslexic-help.vercel.app"
 ]
 }));
 

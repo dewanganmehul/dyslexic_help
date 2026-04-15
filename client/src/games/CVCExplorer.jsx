@@ -123,14 +123,14 @@ function CVCExplorer() {
   };
 
   return (
-    <div style={{ backgroundColor: "#1e1e2f", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>🧩 CVC Explorer</h1>
-      <p>Build words with the short 'A' sound! Click a tile to move it into place.</p>
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>🧱 CVC Word Builder</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Drag the letters to spell the word you hear.</p>
 
       {gameOver ? (
-        <div>
-          <h2>Exploration Complete!</h2>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Quest Complete!</h2>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       ) : (
         <div style={{ marginTop: "30px" }}>
@@ -179,15 +179,6 @@ function CVCExplorer() {
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
+
 
 export default CVCExplorer;

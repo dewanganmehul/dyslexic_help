@@ -80,19 +80,19 @@ function StarTracker() {
   };
 
   return (
-    <div style={{ backgroundColor: "#0b0d17", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center", position: "relative", overflow: "hidden" }} ref={gameAreaRef}>
-      <h1>✨ Star Tracker Diagnostics</h1>
-      <p>Click the appearing stars as fast as you can. We are tracking your visual response speed.</p>
+    <div className="game-container" ref={gameAreaRef}>
+      <h1 style={{ marginBottom: "1rem" }}>✨ Star Tracker Diagnostics</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem", maxWidth: "600px" }}>Click the appearing stars as fast as you can. We are tracking your visual response speed.</p>
       
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} style={btnStyle}>Commence Calibration 🚀</button>
+        <button onClick={startGame} className="neon-btn">Commence Calibration 🚀</button>
       )}
 
       {gameOver && (
-        <div>
-          <h2>Mission Complete!</h2>
-          <p>Score: {score}</p>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Mission Complete!</h2>
+          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Score: {score}</p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       )}
 
@@ -117,15 +117,6 @@ function StarTracker() {
   );
 }
 
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
+
 
 export default StarTracker;

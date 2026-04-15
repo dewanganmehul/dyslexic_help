@@ -167,19 +167,20 @@ function PhonemePopper() {
   if (showResult) {
     return (
       <div className="game-container">
-        <h1>🎉 Mission Complete!</h1>
+        <div className="glass-panel pulse-glow">
+          <h1 style={{ marginBottom: "1rem" }}>🎉 Mission Complete!</h1>
+          <h2 style={{ marginBottom: "0.5rem" }}>Score: {finalStats.score}/{finalStats.total}</h2>
+          <h3 style={{ color: "var(--text-muted)", marginBottom: "0.5rem" }}>Accuracy: {finalStats.accuracy}%</h3>
+          <h3 style={{ color: "var(--text-muted)", marginBottom: "1.5rem" }}>Level Played: {finalStats.level.toUpperCase()}</h3>
 
-        <h2>Score: {finalStats.score}/{finalStats.total}</h2>
-        <h3>Accuracy: {finalStats.accuracy}%</h3>
-        <h3>Level Played: {finalStats.level.toUpperCase()}</h3>
+          {finalStats.nextLevel !== finalStats.level && (
+            <h2 style={{ color: "var(--accent-cyan)", marginBottom: "1rem" }}>🚀 Level Up: {finalStats.nextLevel.toUpperCase()}</h2>
+          )}
 
-        {finalStats.nextLevel !== finalStats.level && (
-          <h2>🚀 Level Up: {finalStats.nextLevel.toUpperCase()}</h2>
-        )}
-
-        <button className="submit-btn" onClick={handleNext}>
-          Continue 🚀
-        </button>
+          <button className="neon-btn" onClick={handleNext}>
+            Continue 🚀
+          </button>
+        </div>
       </div>
     );
   }
@@ -187,34 +188,32 @@ function PhonemePopper() {
   // 🎮 GAME SCREEN
   return (
     <div className="game-container">
-      <h1 className="title">🚀 Space Mission: Phoneme Popper</h1>
+      <h1 className="title" style={{ marginBottom: "0.5rem" }}>🚀 Phoneme Popper</h1>
+      <h2 style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Level: {level.toUpperCase()}</h2>
 
-      <h2>Level: {level.toUpperCase()}</h2>
-
-      <div className="bubble">{currentWord}</div>
+      <div style={{ fontSize: "3rem", margin: "2rem 0", color: "var(--accent-cyan)" }}>{currentWord}</div>
 
       <input
-        className="input-box"
+        className="premium-input"
+        style={{ maxWidth: "300px", marginBottom: "1rem" }}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Type OR Speak..."
       />
 
-      <br /><br />
+      <div style={{ display: "flex", gap: "15px", justifyContent: "center", marginBottom: "2rem" }}>
+        <button className="neon-btn" onClick={handleSubmit}>
+          Pop Bubble 💥
+        </button>
 
-      <button className="submit-btn" onClick={handleSubmit}>
-        Pop Bubble 💥
-      </button>
+        <button className="ghost-btn" onClick={startListening}>
+          🎤 {listening ? "Listening..." : "Speak"}
+        </button>
+      </div>
 
-      <br /><br />
+      <h3 style={{ borderTop: "1px solid var(--glass-border)", paddingTop: "1rem" }}>Score: {score}</h3>
 
-      <button className="submit-btn" onClick={startListening}>
-        🎤 {listening ? "Listening..." : "Speak"}
-      </button>
-
-      <h3 className="score">Score: {score}</h3>
-
-      {feedback && <div className="feedback">{feedback}</div>}
+      {feedback && <div style={{ marginTop: "1rem", color: feedback.includes("❌") ? "var(--error)" : "var(--success)" }}>{feedback}</div>}
     </div>
   );
 }

@@ -1,73 +1,79 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
 
 function TypingQuest() {
+  const [targetWord, setTargetWord] = useState("apple");
+  const [typedWord, setTypedWord] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [sequence, setSequence] = useState("dyslexia".split(""));
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   
+  const startTimeRef = useRef(0);
   const navigate = useNavigate();
 
-  // Web Audio for multisensory feedback
-  const playSynthesizedPhoneme = (letter) => {
-    const speech = new SpeechSynthesisUtterance(letter);
-    speech.rate = 1.0;
-    speech.pitch = 1.5;
+  const playSynthesizedVoice = (text) => {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.rate = 0.9; 
     window.speechSynthesis.speak(speech);
   };
 
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const handleKeyDown = (e) => {
-      // Ignore meta keys
-      if (e.ctrlKey || e.altKey || e.metaKey || e.key.length > 1) return;
-
-      const key = e.key.toLowerCase();
-      playSynthesizedPhoneme(key);
-
-      if (key === sequence[currentIndex]) {
-        setScore(prev => prev + 10);
-        setCurrentIndex(prev => {
-          const next = prev + 1;
-          if (next >= sequence.length) {
-            endGame();
-          }
-          return next;
-        });
-      } else {
-        // Error, lose points or just ignore/feedback
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPlaying, currentIndex, sequence]);
-
   const startGame = () => {
     setIsPlaying(true);
-    setCurrentIndex(0);
+    setGameOver(false);
     setScore(0);
+    setTypedWord("");
+    startTimeRef.current = performance.now();
   };
 
-  const endGame = async () => {
-    setIsPlaying(false);
-    setGameOver(true);
+  const handleKeyDown = (e) => {
+    if (!isPlaying || gameOver) return;
 
+    // Ignore special keys
+    if (e.key.length > 1) return;
+
+    const char = e.key.toLowerCase();
+    const expectedChar = targetWord[typedWord.length];
+
+    if (char === expectedChar) {
+      playSynthesizedVoice(char);
+      setTypedWord(prev => prev + char);
+      
+      if (typedWord.length + 1 === targetWord.length) {
+        // Word complete
+        playSynthesizedVoice(targetWord); // Reinforce full word
+        setScore(score + 10);
+        endGame();
+      }
+    } else {
+      // Wrong key hit, penalty or log could occur here
+      playSynthesizedVoice("Oops");
+    }
+  };
+
+  // Provide focus so we can just type anywhere on screen
+  useEffect(() => {
+    const handleCapture = (e) => handleKeyDown(e);
+    window.addEventListener("keydown", handleCapture);
+    return () => window.removeEventListener("keydown", handleCapture);
+  }, [isPlaying, typedWord, gameOver]);
+
+  const endGame = async () => {
+    setGameOver(true);
+    setIsPlaying(false);
+    const endTime = performance.now();
+    
     try {
       const userId = localStorage.getItem("userId") || "demoUser";
       await axios.post(`${BASE_URL}/api/sessions/submit`, {
         userId,
         gameType: "TypingQuest",
         level: "Quest-2",
-        accuracy: 100, // naive for prototype
-        totalQuestions: sequence.length,
-        correctAnswers: sequence.length,
-        avgResponseTime: 0
+        accuracy: 100, // naive tracking for now
+        totalQuestions: targetWord.length,
+        correctAnswers: targetWord.length,
+        avgResponseTime: (endTime - startTimeRef.current) / targetWord.length
       });
     } catch (err) {
       console.error(err);
@@ -75,47 +81,38 @@ function TypingQuest() {
   };
 
   return (
-    <div style={{ backgroundColor: "#2e0f40", minHeight: "100vh", color: "white", padding: "20px", textAlign: "center" }}>
-      <h1>⌨️ Typing Quest</h1>
-      <p>Type the letters on your keyboard. Hear the sounds as you touch them!</p>
+    <div className="game-container">
+      <h1 style={{ marginBottom: "1rem" }}>⌨️ Typing Quest</h1>
+      <p style={{ color: "var(--text-muted)", marginBottom: "2rem" }}>Type the letters on your keyboard. Hear the sounds as you touch them!</p>
 
       {!isPlaying && !gameOver && (
-        <button onClick={startGame} style={btnStyle}>Begin Typing 🚀</button>
+        <button onClick={startGame} className="neon-btn">Begin Typing 🚀</button>
       )}
 
       {gameOver && (
-        <div>
-          <h2>Quest Complete!</h2>
-          <p>Score: {score}</p>
-          <button onClick={() => navigate("/dashboard")} style={btnStyle}>Return to Mission Control</button>
+        <div className="glass-panel pulse-glow">
+          <h2 style={{ marginBottom: "1rem" }}>Quest Complete!</h2>
+          <p style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Score: {score}</p>
+          <button onClick={() => navigate("/dashboard")} className="ghost-btn">Return to Mission Control</button>
         </div>
       )}
 
       {isPlaying && (
-        <div style={{ marginTop: "50px", fontSize: "60px", letterSpacing: "15px", fontFamily: "monospace" }}>
-          {sequence.map((char, i) => (
-            <span key={i} style={{ 
-              color: i < currentIndex ? "#1D9E75" : i === currentIndex ? "#ffdd00" : "rgba(255,255,255,0.2)",
-              borderBottom: i === currentIndex ? "4px solid #ffdd00" : "none"
-            }}>
-              {char}
-            </span>
-          ))}
+        <div style={{ marginTop: "40px" }}>
+          <h2 style={{ fontSize: "50px", letterSpacing: "15px" }}>
+            {targetWord.split("").map((char, index) => {
+              const isTyped = index < typedWord.length;
+              return (
+                <span key={index} style={{ color: isTyped ? "var(--success)" : "rgba(255,255,255,0.2)" }}>
+                  {char}
+                </span>
+              );
+            })}
+          </h2>
         </div>
       )}
     </div>
   );
 }
-
-const btnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#4cc9f0",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  marginTop: "20px"
-};
 
 export default TypingQuest;
