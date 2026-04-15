@@ -1,0 +1,118 @@
+/* RhymeTrampoline.css */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Space+Grotesk:wght@500;700&display=swap');
+
+.rt-root {
+  min-height: 100vh;
+  background: linear-gradient(to top, #0a0614, #1a0b2e);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Star speed lines to simulate movement */
+.rt-speed-lines {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 100px 100px;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.rt-hud {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  padding: 30px;
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.rt-target-display {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  color: #7c3aed;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.rt-target-word {
+  font-size: 3rem;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(124, 58, 237, 0.6);
+  margin: 10px 0;
+}
+
+.rt-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.rt-word-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rt-word-btn:hover {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: #7c3aed;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+}
+
+/* Physics Objects */
+.rt-character-area {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 400px;
+  pointer-events: none;
+}
+
+.rt-astronaut {
+  font-size: 70px;
+  position: absolute;
+  left: 50%;
+  margin-left: -35px;
+  filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.5));
+}
+
+.rt-thruster-pad {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 10px;
+  background: linear-gradient(90deg, transparent, #7c3aed, transparent);
+  border-radius: 5px;
+  box-shadow: 0 0 20px #7c3aed;
+}
+
+.rt-thruster-pad::after {
+  content: '';
+  position: absolute;
+  top: 10px; left: 0; width: 100%; height: 50px;
+  background: linear-gradient(to bottom, rgba(124, 58, 237, 0.3), transparent);
+}
