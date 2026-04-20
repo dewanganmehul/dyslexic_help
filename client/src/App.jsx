@@ -16,15 +16,20 @@ import Signup from "./pages/Signup";
 import GalaxyMap from "./pages/GalaxyMap";
 import Landing from "./pages/Landing";
 
+import SmartCompanionPage from "./pages/SmartCompanionPage";
+import SmartCompanionWidget from "./components/SmartCompanionWidget";
+
 function App() {
   return (
     <BrowserRouter>
+      <SmartCompanionWidget />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/map" element={<GalaxyMap />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/companion" element={<SmartCompanionPage />} />
         
         {/* Games */}
         <Route path="/game/phoneme-popper/:level" element={<PhonemePopper />} />

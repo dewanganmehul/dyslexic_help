@@ -1,0 +1,548 @@
+/* ================================================================
+   SmartCompanionPage.css — DyslexiCore Smart Companion
+   Theme: Deep Space · Neon Aura · Gamified Literacy Engine
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────────── */
+:root {
+  --void:        #07060f;
+  --deep-space:  #0d0b1e;
+  --nebula:      #13102a;
+  --panel-bg:    rgba(18, 15, 40, 0.72);
+  --glass-border:rgba(120, 80, 255, 0.18);
+
+  --primary:     #7c3aed;
+  --primary-glow:#a855f7;
+  --cyan:        #38bdf8;
+  --pink:        #e879f9;
+  --pink-soft:   #c084fc;
+  --white:       #f0ecff;
+  --muted:       #8b85b0;
+
+  --gradient-title: linear-gradient(135deg, var(--cyan) 0%, var(--primary-glow) 50%, var(--pink) 100%);
+  --gradient-btn:   linear-gradient(135deg, #6d28d9 0%, #7c3aed 60%, #a21caf 100%);
+  --gradient-glow:  radial-gradient(ellipse at 60% 0%, rgba(124,58,237,0.35) 0%, transparent 65%),
+                    radial-gradient(ellipse at 10% 80%, rgba(56,189,248,0.2) 0%, transparent 55%);
+
+  --radius-lg:   18px;
+  --radius-xl:   26px;
+  --font-display:'Orbitron', sans-serif;
+  --font-body:   'DM Sans', sans-serif;
+  --transition:  cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Animated Star-field Background ───────────────────────────── */
+.smart-companion-page {
+  min-height: 100vh;
+  position: relative;
+  background:
+    var(--gradient-glow),
+    radial-gradient(ellipse at 80% 100%, rgba(232,121,249,0.12) 0%, transparent 50%),
+    var(--deep-space);
+  overflow: hidden;
+}
+
+/* Floating orbs */
+.smart-companion-page::before,
+.smart-companion-page::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  animation: float-orb 12s ease-in-out infinite alternate;
+}
+.smart-companion-page::before {
+  width: 520px; height: 520px;
+  top: -120px; left: -100px;
+  background: radial-gradient(circle, rgba(109,40,217,0.4) 0%, transparent 70%);
+}
+.smart-companion-page::after {
+  width: 400px; height: 400px;
+  bottom: -80px; right: -80px;
+  background: radial-gradient(circle, rgba(56,189,248,0.25) 0%, transparent 70%);
+  animation-delay: -6s;
+  animation-duration: 15s;
+}
+
+@keyframes float-orb {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 30px) scale(1.08); }
+}
+
+/* Star particles — pure CSS */
+.smart-companion-page > * { position: relative; z-index: 1; }
+
+/* ── Glass Panel ───────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 24px 60px rgba(0,0,0,0.55),
+    0 0 80px rgba(124,58,237,0.08);
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.companion-header {
+  max-width: 860px;
+  margin: 48px auto 0;
+  padding: 44px 52px 36px;
+  text-align: center;
+  animation: slide-up 0.7s var(--transition) both;
+}
+
+.companion-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+/* Glowing underline on h1 */
+.companion-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -6px; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 2px;
+  background: var(--gradient-title);
+  border-radius: 4px;
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+.companion-header p {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  margin-top: 14px;
+  margin-bottom: 32px;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────── */
+.companion-tabs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  padding: 6px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.tab-btn {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 10px 28px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.35s var(--transition);
+  color: var(--muted);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  background: var(--gradient-btn);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.tab-btn:hover { color: var(--white); }
+.tab-btn:hover::before { opacity: 0.35; }
+
+.tab-btn.active {
+  color: var(--white);
+  background: var(--gradient-btn);
+  box-shadow:
+    0 0 20px rgba(124,58,237,0.5),
+    0 0 40px rgba(124,58,237,0.2);
+  text-shadow: 0 0 12px rgba(168,85,247,0.8);
+}
+
+/* ── Main Content ──────────────────────────────────────────────── */
+.companion-main {
+  max-width: 860px;
+  margin: 28px auto 60px;
+  padding: 0 16px;
+  animation: slide-up 0.8s var(--transition) 0.1s both;
+}
+
+/* ── Chat Container ────────────────────────────────────────────── */
+.chat-container {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 520px;
+}
+
+/* ── Chat History ──────────────────────────────────────────────── */
+.chat-history {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+.chat-history::-webkit-scrollbar { width: 4px; }
+.chat-history::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* ── Chat Messages ─────────────────────────────────────────────── */
+.chat-message {
+  display: flex;
+  animation: message-in 0.4s var(--transition) both;
+}
+
+.chat-message.user  { justify-content: flex-end; }
+.chat-message.assistant { justify-content: flex-start; }
+
+.chat-bubble {
+  max-width: 72%;
+  padding: 14px 20px;
+  border-radius: 20px;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.chat-message.user .chat-bubble {
+  background: var(--gradient-btn);
+  border-bottom-right-radius: 4px;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.4), 0 0 30px rgba(124,58,237,0.15);
+}
+
+.chat-message.assistant .chat-bubble {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--glass-border);
+  border-bottom-left-radius: 4px;
+  color: var(--white);
+  position: relative;
+}
+
+/* Assistant bubble accent line */
+.chat-message.assistant .chat-bubble::before {
+  content: '';
+  position: absolute;
+  left: -1px; top: 20%; bottom: 20%;
+  width: 2px;
+  background: var(--gradient-title);
+  border-radius: 2px;
+}
+
+/* Typing indicator */
+.chat-bubble.typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 22px;
+  font-size: 0;
+}
+.chat-bubble.typing::after {
+  content: '● ● ●';
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 4px;
+  animation: pulse-dots 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dots {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+/* Bubble markdown elements */
+.analysis-heading {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin: 12px 0 6px;
+}
+.analysis-list-item {
+  font-size: 0.9rem;
+  color: var(--white);
+  padding-left: 14px;
+  position: relative;
+  list-style: none;
+  margin: 4px 0;
+}
+.analysis-list-item::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--primary-glow);
+  font-weight: 700;
+}
+.analysis-text {
+  font-size: 0.93rem;
+  color: rgba(240,236,255,0.88);
+  margin: 4px 0;
+}
+
+/* ── Chat Input ────────────────────────────────────────────────── */
+.chat-input-area {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  padding: 8px 8px 8px 22px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chat-input-area:focus-within {
+  border-color: rgba(124,58,237,0.55);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12), 0 0 30px rgba(124,58,237,0.1);
+}
+
+.chat-input-area input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 300;
+  caret-color: var(--primary-glow);
+}
+
+.chat-input-area input::placeholder { color: var(--muted); }
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 13px 28px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: var(--gradient-btn);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s var(--transition), box-shadow 0.25s ease;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.45);
+  white-space: nowrap;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.btn-primary:hover::before { left: 150%; }
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.6), 0 0 50px rgba(124,58,237,0.2);
+}
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 11px 26px;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--primary-glow);
+  color: var(--white);
+  box-shadow: 0 0 20px rgba(168,85,247,0.25);
+}
+
+.mt-4 { margin-top: 20px; }
+
+/* ── Report Container ──────────────────────────────────────────── */
+.report-container {
+  padding: 44px 48px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.report-container h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.report-desc {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 520px;
+}
+
+/* ── Analysis Box ──────────────────────────────────────────────── */
+.analysis-box {
+  width: 100%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer top accent */
+.analysis-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gradient-title);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Animations ────────────────────────────────────────────────── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fade-in {
+  animation: fade-in-up 0.5s var(--transition) both;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scanning grid overlay on glass panels */
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(124,58,237,0.03) 40px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+.glass-panel > * { position: relative; z-index: 1; }
+
+/* Pulse ring on active tab */
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50px;
+  border: 1px solid rgba(168,85,247,0.4);
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(1.08); opacity: 0; }
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .companion-header { padding: 28px 20px 24px; margin-top: 24px; }
+  .chat-container   { padding: 20px; }
+  .report-container { padding: 28px 20px; }
+  .chat-bubble      { max-width: 86%; }
+  .companion-tabs   { flex-direction: column; border-radius: var(--radius-lg); }
+  .tab-btn          { border-radius: var(--radius-lg); }
+}

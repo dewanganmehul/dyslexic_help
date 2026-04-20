@@ -18,10 +18,12 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const tutorRoutes = require("./routes/tutorRoutes");
+const companionRoutes = require("./routes/companionRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/tutor", tutorRoutes);
+app.use("/api/companion", companionRoutes);
 
 app.get("/", (req, res) => {
   res.send("API running");
