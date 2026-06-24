@@ -2,14 +2,16 @@ const Groq = require('groq-sdk');
 
 let groq = null;
 try {
-  if (process.env.GROQ_API_KEY) {
-    groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (apiKey) {
+    groq = new Groq({ apiKey });
   } else {
     console.warn("WARNING: GROQ_API_KEY environment variable is missing. AI companion features will fail.");
   }
 } catch (err) {
   console.error("Failed to initialize Groq SDK:", err);
 }
+
 
 const SYSTEM_PROMPT_ANALYSIS = `You are the "Smart Companion", an AI assistant for a product called DyslexiCore (an early literacy and cognitive assessment platform for children ages 5-12).
 Your task is to analyze a child's performance report and provide insights. 
