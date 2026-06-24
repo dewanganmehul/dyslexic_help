@@ -10,7 +10,7 @@ import SyllableSlider from "./games/SyllableSlider";
 import RhymeTrampoline from "./games/RhymeTrampoline";
 import SoundBlender from "./games/SoundBlender";
 
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import GalaxyMap from "./pages/GalaxyMap";

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SmartCompanionPage.css';
+import { BASE_URL } from '../config/config';
 
 const SmartCompanionPage = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -24,7 +25,7 @@ const SmartCompanionPage = () => {
 
     try {
       // In production, adjust BASE_URL and use environment variables
-      const res = await fetch('http://localhost:5000/api/companion/chat', {
+      const res = await fetch(`${BASE_URL}/api/companion/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages })
@@ -59,7 +60,7 @@ const SmartCompanionPage = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/companion/analyze-report', {
+      const res = await fetch(`${BASE_URL}/api/companion/analyze-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sampleReport)

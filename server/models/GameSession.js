@@ -28,6 +28,6 @@ const gameSessionSchema = new mongoose.Schema({
   },
   riskLevel: { type: String, enum: ['Low', 'Moderate', 'High', 'Pending'], default: 'Pending' }
 
-}, { timestamps: true });
+}, { timestamps: true, suppressReservedKeysWarning: true });
 
 module.exports = mongoose.model("GameSession", gameSessionSchema);
